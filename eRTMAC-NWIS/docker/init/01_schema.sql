@@ -44,10 +44,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_well_geometry ON wells;
 CREATE TRIGGER trg_well_geometry
 BEFORE INSERT OR UPDATE ON wells
 FOR EACH ROW EXECUTE FUNCTION populate_well_geometry();
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wells_name ON wells(well_name);
 CREATE INDEX IF NOT EXISTS idx_wells_surface ON wells USING GIST(surface_location);
 CREATE INDEX IF NOT EXISTS idx_wells_field   ON wells(field_name);
 
@@ -240,12 +242,12 @@ BEGIN
             w.surface_location::geography,
             ST_SetSRID(ST_MakePoint(p_bit_lon, p_bit_lat), 4326)::geography
         ) AS surface_dist_m,
-        MIN(ts.tvdss_m) OVER (PARTITION BY w.well_id) AS min_tvdss_m,
-        MAX(ts.tvdss_m) OVER (PARTITION BY w.well_id) AS max_tvdss_m
+        (MIN(ts.tvdss_m) OVER (PARTITION BY w.well_id))::DOUBLE PRECISION AS min_tvdss_m,
+        (MAX(ts.tvdss_m) OVER (PARTITION BY w.well_id))::DOUBLE PRECISION AS max_tvdss_m
     FROM wells w
     JOIN trajectory_stations ts ON w.well_id = ts.well_id
     WHERE
-        w.well_id != p_active_well_id
+        (p_active_well_id IS NULL OR w.well_id != p_active_well_id)
         AND w.status = 'COMPLETED'
         -- Surface radius filter (fast, uses geography index)
         AND ST_DWithin(
@@ -259,3 +261,11 @@ BEGIN
     ORDER BY surface_dist_m ASC;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Grant permissions to application user nwis
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nwis;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO nwis;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO nwis;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO nwis;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO nwis;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO nwis;
