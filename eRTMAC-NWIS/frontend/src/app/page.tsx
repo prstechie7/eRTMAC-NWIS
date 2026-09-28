@@ -349,9 +349,9 @@ export default function Home() {
       />
 
       {/* Main 4-Panel Enterprise Drilling Intelligence Grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-5">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto p-3 md:p-3.5 space-y-3">
         {/* Top Row: Panel 1 (Map) + Panel 2 (Curtain Cross-Section) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Panel 1: 2D Basin Navigator & Spatial Radius Filter */}
           <div className="h-full">
             <BasinMap
@@ -375,7 +375,7 @@ export default function Home() {
         </div>
 
         {/* Bottom Row: Panel 3 (Look-Ahead Alert Card) + Panel 4 (Telemetry & Physics Track) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Panel 3: Real-Time Look-Ahead Advisory & Mitigations */}
           <div className="h-full">
             <LookAheadCard
@@ -400,14 +400,14 @@ export default function Home() {
       </main>
 
       {/* Industrial Footer */}
-      <footer className="bg-[#1E242B] text-gray-400 border-t border-slate-800 text-xs py-3 px-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <footer className="bg-[#1E242B] text-gray-400 border-t border-slate-800 text-xs py-2 px-4">
+        <div className="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="font-bold text-white">Oil India Limited · eRTMAC</span>
             <span>|</span>
             <span>SIH26121 Nearby Wells Intelligence System</span>
           </div>
-          <div className="font-mono text-[11px] text-gray-400">
+          <div className="font-mono text-[10.5px] text-gray-400">
             Formulation: MCM 3D · Dip-Rotated TSD · Teale MSE · Outmans Differential Sticking Model
           </div>
         </div>
