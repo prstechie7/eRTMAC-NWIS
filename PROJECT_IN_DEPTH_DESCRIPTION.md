@@ -559,3 +559,2911 @@ python3 tests/test_runner.py --tier all
 | **AI Safety & RAG** | Unconstrained LLM chatbot that hallucinates | Strict grounded evidence retrieval (Gemini 2.5 Flash) citing exact DDR pages and offset wells |
 | **Control Room Usability** | Generic analytics dashboard | 4-panel industrial console + Doghouse touchscreen mode + 1-click signed 2-page PDF export |
 | **Verification & Tests** | Minimal or no unit testing | 183 automated tests across 4 tiers with 100% pass rate in 1.27 seconds |
+
+---
+
+# 🌟 NEW: NWIS / eRTMAC — Full Implementation Plan + Backend Logic 🌟
+
+The implementation below is designed specifically for your **Nearby Wells Intelligence System (NWIS)** project and the current **eRTMAC-NWIS** direction.
+
+The central idea is:
+
+> **Historical well documents + live drilling data → OCR → NLP/LLM extraction → validated well knowledge base → nearby-well correlation → depth/formation correlation → risk intelligence → recommendations/alerts → dashboard**
+
+The backend should **not** allow the LLM to directly make unverified drilling decisions. The LLM extracts and explains information; deterministic validation, correlation, scoring and rule engines control the actual backend decisions.
+
+---
+
+## 1. Final NWIS System Architecture
+
+```text
+                    ┌───────────────────────────────┐
+                    │ HISTORICAL WELL DOCUMENTS     │
+                    │                               │
+                    │ WCR / DDR / PDF / Reports    │
+                    │ Mud Logs / Cementing Records  │
+                    │ Drilling Reports              │
+                    └───────────────┬───────────────┘
+                                    │
+                                    ▼
+                    ┌───────────────────────────────┐
+                    │         OCR AGENT             │
+                    │                               │
+                    │ PDF extraction                │
+                    │ Image preprocessing            │
+                    │ OCR                           │
+                    │ Text cleaning                 │
+                    └───────────────┬───────────────┘
+                                    │
+                                    ▼
+                    ┌───────────────────────────────┐
+                    │         NLP AGENT              │
+                    │                               │
+                    │ Well entities                 │
+                    │ Coordinates                   │
+                    │ Depth / TVD                   │
+                    │ Formation                     │
+                    │ Drilling events               │
+                    │ Mud / cement parameters       │
+                    │ Problems / lessons learned    │
+                    └───────────────┬───────────────┘
+                                    │
+                                    ▼
+                    ┌───────────────────────────────┐
+                    │ VALIDATION + NORMALIZATION    │
+                    │                               │
+                    │ Units                         │
+                    │ Coordinates                   │
+                    │ Dates                         │
+                    │ Depth                         │
+                    │ Confidence                    │
+                    │ Duplicate checking             │
+                    └───────────────┬───────────────┘
+                                    │
+                                    ▼
+              ┌────────────────────────────────────────────┐
+              │             NWIS KNOWLEDGE BASE            │
+              │                                            │
+              │ Wells                                      │
+              │ Well Sections                              │
+              │ Formations                                 │
+              │ Drilling Events                            │
+              │ Mud / Cement Data                          │
+              │ Problems / Incidents                       │
+              │ Documents                                  │
+              │ Historical Measurements                     │
+              └───────────────────┬────────────────────────┘
+                                  │
+              ┌───────────────────┼──────────────────────┐
+              │                   │                      │
+              ▼                   ▼                      ▼
+     ┌────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+     │ GEO ENGINE     │  │ CORRELATION      │  │ KNOWLEDGE/RAG    │
+     │                │  │ ENGINE           │  │                  │
+     │ Nearby wells   │  │ Depth            │  │ Historical docs  │
+     │ Distance       │  │ Formation        │  │ Events           │
+     │ Radius         │  │ Lithology        │  │ Lessons          │
+     │ Spatial rank   │  │ Parameters       │  │ Evidence         │
+     └───────┬────────┘  └────────┬─────────┘  └────────┬─────────┘
+             │                    │                     │
+             └────────────────────┼─────────────────────┘
+                                  ▼
+                    ┌───────────────────────────────┐
+                    │     RISK INTELLIGENCE        │
+                    │                               │
+                    │ Losses                       │
+                    │ Kicks                        │
+                    │ Stuck pipe                   │
+                    │ Torque / drag                │
+                    │ Cementing risks               │
+                    │ Formation-related problems   │
+                    └───────────────┬───────────────┘
+                                    │
+                                    ▼
+                    ┌───────────────────────────────┐
+                    │ RECOMMENDATION ENGINE         │
+                    │                               │
+                    │ Similar wells                 │
+                    │ Historical evidence           │
+                    │ Risk score                    │
+                    │ Recommended action            │
+                    │ Explanation                   │
+                    └───────────────┬───────────────┘
+                                    │
+                  ┌─────────────────┴──────────────────┐
+                  ▼                                    ▼
+       ┌────────────────────┐              ┌────────────────────┐
+       │ REST API / FastAPI │              │ LIVE eRTMAC INPUT  │
+       │                    │              │                    │
+       │ Dashboard API      │              │ Depth              │
+       │ Search API         │              │ WOB                │
+       │ RPM                │              │ Torque             │
+       │ Risk API           │              │ ROP                │
+       │ Recommendation API │              │ Mud parameters     │
+       └─────────┬──────────┘              └──────────┬─────────┘
+                 │                                    │
+                 └────────────────┬───────────────────┘
+                                  ▼
+                    ┌───────────────────────────────┐
+                    │        WEB DASHBOARD          │
+                    │                               │
+                    │ Well Map                      │
+                    │ Nearby Wells                  │
+                    │ Depth Correlation              │
+                    │ Historical Events              │
+                    │ Risk Alerts                    │
+                    │ Recommendations                │
+                    │ Evidence                       │
+                    └───────────────────────────────┘
+```
+
+---
+
+## 2. What We Are Actually Building
+
+The final system has **8 backend layers**.
+
+| Layer | Purpose |
+|---|---|
+| 1. Document ingestion | Accept WCR/DDR/PDF/images |
+| 2. OCR | Convert documents to text |
+| 3. NLP | Extract structured well information |
+| 4. Knowledge base | Store normalized information |
+| 5. Geospatial engine | Find and rank nearby wells |
+| 6. Correlation engine | Compare depth, formation and drilling parameters |
+| 7. Risk/recommendation engine | Predict/score drilling risks |
+| 8. API + live engine | Connect everything to dashboard/eRTMAC |
+
+---
+
+## 3. Recommended NWIS Project Structure
+
+Put everything under your existing project root.
+
+```text
+eRTMAC-NWIS/
+│
+├── backend/
+│   │
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   ├── models.py
+│   │   ├── schemas.py
+│   │   │
+│   │   ├── routers/
+│   │   │   ├── __init__.py
+│   │   │   ├── documents.py
+│   │   │   ├── wells.py
+│   │   │   ├── intelligence.py
+│   │   │   ├── realtime.py
+│   │   │   └── chat.py
+│   │   │
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── ocr_service.py
+│   │   │   ├── nlp_service.py
+│   │   │   ├── normalization.py
+│   │   │   ├── geo_service.py
+│   │   │   ├── correlation_service.py
+│   │   │   ├── risk_service.py
+│   │   │   ├── recommendation_service.py
+│   │   │   ├── rag_service.py
+│   │   │   └── intelligence_service.py
+│   │   │
+│   │   └── utils/
+│   │       ├── __init__.py
+│   │       ├── units.py
+│   │       ├── confidence.py
+│   │       └── validators.py
+│   │
+│   ├── data/
+│   │   ├── raw/
+│   │   │   ├── wcr/
+│   │   │   ├── ddr/
+│   │   │   └── reports/
+│   │   │
+│   │   ├── processed/
+│   │   │   ├── ocr/
+│   │   │   ├── nlp/
+│   │   │   └── normalized/
+│   │   │
+│   │   └── vector_store/
+│   │
+│   ├── tests/
+│   │   ├── test_ocr.py
+│   │   ├── test_nlp.py
+│   │   ├── test_geo.py
+│   │   ├── test_correlation.py
+│   │   ├── test_risk.py
+│   │   └── test_api.py
+│   │
+│   ├── requirements.txt
+│   └── .env
+│
+├── frontend/
+│
+├── models/
+│   ├── ocr/
+│   ├── nlp/
+│   ├── risk/
+│   └── embeddings/
+│
+├── research/
+│   ├── papers/
+│   └── notes/
+│
+├── README.md
+└── .gitignore
+```
+
+This keeps **all NWIS components under one project** instead of creating independent disconnected projects.
+
+---
+
+## 4. Phase 1 — Document Ingestion
+
+The first backend API should accept:
+
+```text
+PDF
+PNG
+JPG
+JPEG
+TIFF
+```
+
+The flow is:
+
+```text
+Upload
+ ↓
+Generate document ID
+ ↓
+Save original document
+ ↓
+Identify document type
+ ↓
+Send to OCR
+ ↓
+Store OCR result
+ ↓
+Send text to NLP
+ ↓
+Validate extracted data
+ ↓
+Store structured record
+```
+
+---
+
+## 5. Phase 2 — OCR Backend
+
+The OCR agent should produce something like:
+
+```json
+{
+    "document_id": "DOC-00001",
+    "page": 4,
+    "text": "Well XYZ was drilled to a total vertical depth...",
+    "confidence": 0.94
+}
+```
+
+The OCR layer should **not** try to understand the drilling information.
+
+It only answers:
+
+> "What text is present in this document?"
+
+That separation is important.
+
+---
+
+## 6. Phase 3 — NLP Agent
+
+The NLP/Nemotron agent receives OCR text.
+
+It extracts:
+
+```text
+Well information
+    ↓
+Location
+Coordinates
+Depth
+TVD
+MD
+Formation
+Lithology
+Drilling dates
+Operator
+
+Drilling information
+    ↓
+ROP
+WOB
+RPM
+Torque
+Mud weight
+Flow rate
+Pressure
+
+Events
+    ↓
+Losses
+Kick
+Stuck pipe
+Torque increase
+Cementing problem
+Well-control event
+
+Lessons
+    ↓
+Cause
+Action
+Outcome
+```
+
+---
+
+## 7. NLP Output Schema
+
+The NLP agent should return strict JSON.
+
+```json
+{
+    "well": {
+        "name": "Well-A",
+        "api_number": null,
+        "latitude": 23.12345,
+        "longitude": 75.12345,
+        "total_depth": 3200,
+        "tvd": 3150,
+        "operator": "Example Operator"
+    },
+    "formations": [
+        {
+            "name": "Formation-A",
+            "top_depth": 1800,
+            "bottom_depth": 2200,
+            "lithology": "Shale"
+        }
+    ],
+    "events": [
+        {
+            "event_type": "lost_circulation",
+            "depth": 2140,
+            "severity": "medium",
+            "description": "Partial losses observed"
+        }
+    ],
+    "parameters": {
+        "mud_weight": 1.18,
+        "rop": 18.5,
+        "wob": 12.0,
+        "rpm": 120
+    }
+}
+```
+
+---
+
+## 8. Important: Validation Layer
+
+Never directly insert Nemotron output into the database.
+
+Use:
+
+```text
+Nemotron
+   ↓
+JSON parser
+   ↓
+Pydantic validation
+   ↓
+Unit normalization
+   ↓
+Range validation
+   ↓
+Confidence check
+   ↓
+Database
+```
+
+For example:
+
+```text
+Latitude = 200
+```
+
+must be rejected.
+
+Likewise:
+
+```text
+Depth = -5000 m
+```
+
+must be rejected.
+
+---
+
+## 9. Database Design
+
+For the first implementation, I recommend:
+
+```text
+PostgreSQL
++
+PostGIS
+```
+
+because the system is fundamentally geospatial.
+
+For local rapid development, SQLite can be used temporarily, but the final NWIS architecture should be designed around PostgreSQL/PostGIS.
+
+---
+
+## 10. Core Tables
+
+### `wells`
+
+```text
+id
+well_name
+api_number
+operator
+latitude
+longitude
+surface_elevation
+total_depth
+tvd
+spud_date
+completion_date
+created_at
+updated_at
+```
+
+### `formations`
+
+```text
+id
+well_id
+formation_name
+top_depth
+bottom_depth
+lithology
+source_document_id
+confidence
+```
+
+### `drilling_events`
+
+```text
+id
+well_id
+event_type
+depth
+start_time
+end_time
+severity
+description
+cause
+action_taken
+outcome
+confidence
+source_document_id
+```
+
+### `drilling_parameters`
+
+```text
+id
+well_id
+depth
+timestamp
+rop
+wob
+rpm
+torque
+mud_weight
+flow_rate
+standpipe_pressure
+```
+
+### `documents`
+
+```text
+id
+filename
+document_type
+file_path
+status
+created_at
+```
+
+### `ocr_results`
+
+```text
+id
+document_id
+page_number
+text
+confidence
+```
+
+---
+
+## 11. Backend Configuration
+
+Create:
+
+`backend/app/config.py`
+
+```python
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    app_name: str = "NWIS Backend"
+    database_url: str = "sqlite:///./nwis.db"
+
+    upload_dir: str = "data/raw"
+
+    # Nemotron / local LLM configuration
+    llm_base_url: str = "http://localhost:8000/v1"
+    llm_api_key: str = "local"
+    llm_model: str = "nemotron"
+
+    nearby_radius_km: float = 25.0
+
+    class Config:
+        env_file = ".env"
+
+
+settings = Settings()
+```
+
+`.env`
+
+```text
+DATABASE_URL=sqlite:///./nwis.db
+
+LLM_BASE_URL=http://localhost:8000/v1
+LLM_API_KEY=local
+LLM_MODEL=nemotron
+
+NEARBY_RADIUS_KM=25
+```
+
+When your Nemotron server endpoint is finalized, only these values need to change.
+
+---
+
+## 12. Database Connection
+
+`backend/app/database.py`
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+from .config import settings
+
+
+connect_args = {}
+
+if settings.database_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
+
+engine = create_engine(
+    settings.database_url,
+    connect_args=connect_args
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
+
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
+```
+
+---
+
+## 13. Database Models
+
+`backend/app/models.py`
+
+```python
+from datetime import datetime
+
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    Text,
+    ForeignKey
+)
+
+from sqlalchemy.orm import relationship
+
+from .database import Base
+
+
+class Document(Base):
+
+    __tablename__ = "documents"
+
+    id = Column(Integer, primary_key=True)
+
+    filename = Column(String, nullable=False)
+
+    document_type = Column(String)
+
+    file_path = Column(String)
+
+    status = Column(String, default="uploaded")
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    ocr_results = relationship(
+        "OCRResult",
+        back_populates="document"
+    )
+
+
+class OCRResult(Base):
+
+    __tablename__ = "ocr_results"
+
+    id = Column(Integer, primary_key=True)
+
+    document_id = Column(
+        Integer,
+        ForeignKey("documents.id")
+    )
+
+    page_number = Column(Integer)
+
+    text = Column(Text)
+
+    confidence = Column(Float)
+
+    document = relationship(
+        "Document",
+        back_populates="ocr_results"
+    )
+
+
+class Well(Base):
+
+    __tablename__ = "wells"
+
+    id = Column(Integer, primary_key=True)
+
+    well_name = Column(String, nullable=False)
+
+    api_number = Column(String)
+
+    operator = Column(String)
+
+    latitude = Column(Float)
+
+    longitude = Column(Float)
+
+    total_depth = Column(Float)
+
+    tvd = Column(Float)
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    formations = relationship(
+        "Formation",
+        back_populates="well"
+    )
+
+    events = relationship(
+        "DrillingEvent",
+        back_populates="well"
+    )
+
+    parameters = relationship(
+        "DrillingParameter",
+        back_populates="well"
+    )
+
+
+class Formation(Base):
+
+    __tablename__ = "formations"
+
+    id = Column(Integer, primary_key=True)
+
+    well_id = Column(
+        Integer,
+        ForeignKey("wells.id")
+    )
+
+    formation_name = Column(String)
+
+    top_depth = Column(Float)
+
+    bottom_depth = Column(Float)
+
+    lithology = Column(String)
+
+    confidence = Column(Float)
+
+    well = relationship(
+        "Well",
+        back_populates="formations"
+    )
+
+
+class DrillingEvent(Base):
+
+    __tablename__ = "drilling_events"
+
+    id = Column(Integer, primary_key=True)
+
+    well_id = Column(
+        Integer,
+        ForeignKey("wells.id")
+    )
+
+    event_type = Column(String)
+
+    depth = Column(Float)
+
+    severity = Column(String)
+
+    description = Column(Text)
+
+    cause = Column(Text)
+
+    action_taken = Column(Text)
+
+    outcome = Column(Text)
+
+    confidence = Column(Float)
+
+    well = relationship(
+        "Well",
+        back_populates="events"
+    )
+
+
+class DrillingParameter(Base):
+
+    __tablename__ = "drilling_parameters"
+
+    id = Column(Integer, primary_key=True)
+
+    well_id = Column(
+        Integer,
+        ForeignKey("wells.id")
+    )
+
+    depth = Column(Float)
+
+    timestamp = Column(DateTime)
+
+    rop = Column(Float)
+
+    wob = Column(Float)
+
+    rpm = Column(Float)
+
+    torque = Column(Float)
+
+    mud_weight = Column(Float)
+
+    flow_rate = Column(Float)
+
+    standpipe_pressure = Column(Float)
+
+    well = relationship(
+        "Well",
+        back_populates="parameters"
+    )
+```
+
+---
+
+## 14. Pydantic Schemas
+
+`backend/app/schemas.py`
+
+```python
+from typing import Optional, List
+
+from pydantic import BaseModel, Field
+
+
+class WellCreate(BaseModel):
+
+    well_name: str
+
+    api_number: Optional[str] = None
+
+    operator: Optional[str] = None
+
+    latitude: Optional[float] = Field(
+        None,
+        ge=-90,
+        le=90
+    )
+
+    longitude: Optional[float] = Field(
+        None,
+        ge=-180,
+        le=180
+    )
+
+    total_depth: Optional[float] = None
+
+    tvd: Optional[float] = None
+
+
+class FormationCreate(BaseModel):
+
+    formation_name: str
+
+    top_depth: Optional[float] = None
+
+    bottom_depth: Optional[float] = None
+
+    lithology: Optional[str] = None
+
+    confidence: float = 0.0
+
+
+class EventCreate(BaseModel):
+
+    event_type: str
+
+    depth: Optional[float] = None
+
+    severity: Optional[str] = None
+
+    description: Optional[str] = None
+
+    cause: Optional[str] = None
+
+    action_taken: Optional[str] = None
+
+    outcome: Optional[str] = None
+
+    confidence: float = 0.0
+
+
+class NearbyWellResponse(BaseModel):
+
+    well_id: int
+
+    well_name: str
+
+    distance_km: float
+
+    similarity_score: float
+```
+
+---
+
+## 15. Geospatial Engine
+
+This is one of the most important NWIS components.
+
+`backend/app/services/geo_service.py`
+
+```python
+import math
+
+
+def haversine_distance(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+):
+    """
+    Calculate distance between two geographic
+    coordinates in kilometers.
+    """
+
+    R = 6371.0
+
+    lat1 = math.radians(lat1)
+    lat2 = math.radians(lat2)
+
+    dlat = lat2 - lat1
+    dlon = math.radians(lon2 - lon1)
+
+    a = (
+        math.sin(dlat / 2) ** 2
+        +
+        math.cos(lat1)
+        * math.cos(lat2)
+        * math.sin(dlon / 2) ** 2
+    )
+
+    c = 2 * math.atan2(
+        math.sqrt(a),
+        math.sqrt(1 - a)
+    )
+
+    return R * c
+
+
+def nearby_wells(
+    wells,
+    latitude,
+    longitude,
+    radius_km
+):
+
+    results = []
+
+    for well in wells:
+
+        if (
+            well.latitude is None
+            or well.longitude is None
+        ):
+            continue
+
+        distance = haversine_distance(
+            latitude,
+            longitude,
+            well.latitude,
+            well.longitude
+        )
+
+        if distance <= radius_km:
+
+            results.append(
+                {
+                    "well": well,
+                    "distance_km": round(
+                        distance,
+                        3
+                    )
+                }
+            )
+
+    return sorted(
+        results,
+        key=lambda x: x["distance_km"]
+    )
+```
+
+Later, when PostgreSQL/PostGIS is enabled, this calculation can be moved into spatial SQL for much better performance.
+
+---
+
+## 16. Nearby-Well Ranking
+
+Distance alone isn't enough.
+
+For example:
+
+```text
+Well A
+Distance = 2 km
+Formation = completely different
+
+Well B
+Distance = 5 km
+Formation = same
+Depth = similar
+Historical events = similar
+```
+
+Well B may be more useful.
+
+Therefore:
+
+```text
+Final Similarity Score =
+    Geographic Similarity
+    +
+    Formation Similarity
+    +
+    Depth Similarity
+    +
+    Historical Event Similarity
+```
+
+---
+
+## 17. Correlation Engine
+
+`backend/app/services/correlation_service.py`
+
+```python
+def depth_similarity(
+    target_depth,
+    candidate_depth
+):
+
+    if not target_depth or not candidate_depth:
+        return 0.0
+
+    difference = abs(
+        target_depth - candidate_depth
+    )
+
+    scale = max(
+        target_depth,
+        candidate_depth,
+        1
+    )
+
+    similarity = 1 - (
+        difference / scale
+    )
+
+    return max(
+        0.0,
+        min(1.0, similarity)
+    )
+
+
+def formation_similarity(
+    target_formation,
+    candidate_formation
+):
+
+    if not target_formation:
+        return 0.0
+
+    if not candidate_formation:
+        return 0.0
+
+    return 1.0 if (
+        target_formation.lower()
+        ==
+        candidate_formation.lower()
+    ) else 0.0
+
+
+def calculate_similarity(
+    distance_km,
+    radius_km,
+    depth_score,
+    formation_score,
+    event_score
+):
+
+    geographic_score = max(
+        0.0,
+        1 - distance_km / radius_km
+    )
+
+    score = (
+        geographic_score * 0.30
+        +
+        depth_score * 0.25
+        +
+        formation_score * 0.30
+        +
+        event_score * 0.15
+    )
+
+    return round(
+        score * 100,
+        2
+    )
+```
+
+This gives us an explainable ranking rather than an opaque LLM answer.
+
+---
+
+## 18. Drilling Event Similarity
+
+```python
+def event_similarity(
+    target_events,
+    candidate_events
+):
+
+    if not target_events:
+        return 0.0
+
+    if not candidate_events:
+        return 0.0
+
+    target_types = {
+        e.event_type
+        for e in target_events
+    }
+
+    candidate_types = {
+        e.event_type
+        for e in candidate_events
+    }
+
+    intersection = (
+        target_types &
+        candidate_types
+    )
+
+    union = (
+        target_types |
+        candidate_types
+    )
+
+    if not union:
+        return 0.0
+
+    return len(intersection) / len(union)
+```
+
+This lets NWIS answer:
+
+> "Which nearby historical wells experienced similar drilling problems?"
+
+---
+
+## 19. Risk Engine
+
+The first version should be **rule-based + evidence-based**.
+
+Do not immediately make the LLM responsible for risk prediction.
+
+Example:
+
+```text
+Historical nearby wells:
+3 experienced lost circulation
+2 experienced stuck pipe
+1 experienced kick
+
+Current depth:
+inside same formation
+
+Current mud weight:
+outside historical safe range
+
+→ increase risk score
+```
+
+---
+
+## 20. Risk Engine Code
+
+`backend/app/services/risk_service.py`
+
+```python
+RISK_WEIGHTS = {
+    "lost_circulation": 1.0,
+    "kick": 1.0,
+    "stuck_pipe": 0.8,
+    "high_torque": 0.6,
+    "cementing_problem": 0.5
+}
+
+
+def calculate_event_risk(events):
+
+    if not events:
+        return 0.0
+
+    score = 0.0
+
+    for event in events:
+
+        weight = RISK_WEIGHTS.get(
+            event.event_type,
+            0.2
+        )
+
+        confidence = (
+            event.confidence
+            if event.confidence is not None
+            else 0.5
+        )
+
+        severity_multiplier = {
+            "low": 0.5,
+            "medium": 1.0,
+            "high": 1.5,
+            "critical": 2.0
+        }.get(
+            (event.severity or "").lower(),
+            1.0
+        )
+
+        score += (
+            weight
+            * confidence
+            * severity_multiplier
+        )
+
+    return score
+
+
+def classify_risk(score):
+
+    if score >= 4:
+        return "critical"
+
+    if score >= 2.5:
+        return "high"
+
+    if score >= 1.0:
+        return "moderate"
+
+    return "low"
+```
+
+This is a **baseline**. Later, validated historical datasets can replace or augment it with ML.
+
+---
+
+## 21. Recommendation Engine
+
+`backend/app/services/recommendation_service.py`
+
+```python
+def generate_recommendation(
+    risk_level,
+    similar_wells,
+    events
+):
+
+    recommendations = []
+
+    if risk_level == "critical":
+
+        recommendations.append(
+            "High-priority review of nearby "
+            "historical wells is required."
+        )
+
+    elif risk_level == "high":
+
+        recommendations.append(
+            "Review historical drilling events "
+            "from correlated wells before proceeding."
+        )
+
+    elif risk_level == "moderate":
+
+        recommendations.append(
+            "Monitor drilling parameters closely "
+            "against correlated historical wells."
+        )
+
+    else:
+
+        recommendations.append(
+            "No major historical risk pattern "
+            "identified from the available wells."
+        )
+
+    event_types = {
+        event.event_type
+        for event in events
+    }
+
+    if "lost_circulation" in event_types:
+
+        recommendations.append(
+            "Review historical lost-circulation "
+            "events in the correlated formation."
+        )
+
+    if "stuck_pipe" in event_types:
+
+        recommendations.append(
+            "Review historical stuck-pipe events "
+            "and associated depth intervals."
+        )
+
+    if "kick" in event_types:
+
+        recommendations.append(
+            "Review historical well-control events "
+            "before entering the correlated interval."
+        )
+
+    return recommendations
+```
+
+---
+
+## 22. The NLP/Nemotron Adapter
+
+This is where your Nemotron work fits.
+
+`backend/app/services/nlp_service.py`
+
+```python
+import json
+from openai import OpenAI
+
+from ..config import settings
+
+
+client = OpenAI(
+    base_url=settings.llm_base_url,
+    api_key=settings.llm_api_key
+)
+
+
+SYSTEM_PROMPT = """
+You are the NWIS historical well information
+extraction agent.
+
+Extract only information explicitly present
+in the supplied drilling document.
+
+Do not invent values.
+
+Return valid JSON only.
+
+Required structure:
+
+{
+  "well": {
+    "name": null,
+    "api_number": null,
+    "operator": null,
+    "latitude": null,
+    "longitude": null,
+    "total_depth": null,
+    "tvd": null
+  },
+  "formations": [],
+  "events": [],
+  "parameters": {}
+}
+
+Every extracted value should be traceable
+to the supplied text.
+"""
+
+
+def extract_well_information(text: str):
+
+    response = client.chat.completions.create(
+        model=settings.llm_model,
+        temperature=0,
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+            },
+            {
+                "role": "user",
+                "content": text
+            }
+        ]
+    )
+
+    content = response.choices[0].message.content
+
+    return json.loads(content)
+```
+
+### Important
+
+Your actual Nemotron deployment may expose a different endpoint/model name.
+
+Therefore:
+
+```text
+.env
+```
+
+controls the model.
+
+The rest of NWIS doesn't need to know whether the model is:
+
+```text
+Nemotron
+Llama
+another local model
+```
+
+That is exactly why we create an adapter.
+
+---
+
+## 23. OCR Adapter
+
+`backend/app/services/ocr_service.py`
+
+```python
+from pathlib import Path
+
+
+def extract_text_from_document(
+    file_path: str
+):
+
+    path = Path(file_path)
+
+    suffix = path.suffix.lower()
+
+    if suffix == ".txt":
+
+        return [{
+            "page": 1,
+            "text": path.read_text(
+                encoding="utf-8",
+                errors="ignore"
+            ),
+            "confidence": 1.0
+        }]
+
+    # Connect your existing OCR implementation here.
+    #
+    # Example:
+    #
+    # if suffix == ".pdf":
+    #     return pdf_ocr(path)
+    #
+    # if suffix in [".png", ".jpg", ".jpeg"]:
+    #     return image_ocr(path)
+
+    raise NotImplementedError(
+        "Connect the existing NWIS OCR agent here."
+    )
+```
+
+This is intentional.
+
+Your existing OCR implementation should become the **engine inside this service**, rather than creating a second OCR project.
+
+---
+
+## 24. Document Processing Pipeline
+
+`backend/app/services/intelligence_service.py`
+
+```python
+from sqlalchemy.orm import Session
+
+from ..models import (
+    Document,
+    OCRResult,
+    Well,
+    Formation,
+    DrillingEvent
+)
+
+from .ocr_service import (
+    extract_text_from_document
+)
+
+from .nlp_service import (
+    extract_well_information
+)
+
+
+def process_document(
+    db: Session,
+    document: Document
+):
+
+    document.status = "processing"
+
+    pages = extract_text_from_document(
+        document.file_path
+    )
+
+    full_text = []
+
+    for page in pages:
+
+        result = OCRResult(
+            document_id=document.id,
+            page_number=page["page"],
+            text=page["text"],
+            confidence=page["confidence"]
+        )
+
+        db.add(result)
+
+        full_text.append(
+            page["text"]
+        )
+
+    combined_text = "\n".join(
+        full_text
+    )
+
+    extracted = extract_well_information(
+        combined_text
+    )
+
+    well_data = extracted.get(
+        "well",
+        {}
+    )
+
+    if not well_data.get("name"):
+        document.status = "review_required"
+        db.commit()
+
+        return {
+            "status": "review_required",
+            "reason": "No well name extracted"
+        }
+
+    well = Well(
+        well_name=well_data.get("name"),
+        api_number=well_data.get("api_number"),
+        operator=well_data.get("operator"),
+        latitude=well_data.get("latitude"),
+        longitude=well_data.get("longitude"),
+        total_depth=well_data.get("total_depth"),
+        tvd=well_data.get("tvd")
+    )
+
+    db.add(well)
+
+    db.flush()
+
+    for formation in extracted.get(
+        "formations",
+        []
+    ):
+
+        db.add(
+            Formation(
+                well_id=well.id,
+                formation_name=formation.get(
+                    "name"
+                ),
+                top_depth=formation.get(
+                    "top_depth"
+                ),
+                bottom_depth=formation.get(
+                    "bottom_depth"
+                ),
+                lithology=formation.get(
+                    "lithology"
+                ),
+                confidence=formation.get(
+                    "confidence",
+                    0.0
+                )
+            )
+        )
+
+    for event in extracted.get(
+        "events",
+        []
+    ):
+
+        db.add(
+            DrillingEvent(
+                well_id=well.id,
+                event_type=event.get(
+                    "event_type"
+                ),
+                depth=event.get(
+                    "depth"
+                ),
+                severity=event.get(
+                    "severity"
+                ),
+                description=event.get(
+                    "description"
+                ),
+                cause=event.get(
+                    "cause"
+                ),
+                action_taken=event.get(
+                    "action_taken"
+                ),
+                outcome=event.get(
+                    "outcome"
+                ),
+                confidence=event.get(
+                    "confidence",
+                    0.0
+                )
+            )
+        )
+
+    document.status = "processed"
+
+    db.commit()
+
+    return {
+        "status": "processed",
+        "well_id": well.id
+    }
+```
+
+---
+
+## 25. Document API
+
+`backend/app/routers/documents.py`
+
+```python
+from pathlib import Path
+
+from fastapi import (
+    APIRouter,
+    UploadFile,
+    File,
+    Depends,
+    BackgroundTasks
+)
+
+from sqlalchemy.orm import Session
+
+from ..database import get_db
+from ..models import Document
+from ..services.intelligence_service import (
+    process_document
+)
+
+
+router = APIRouter(
+    prefix="/documents",
+    tags=["Documents"]
+)
+
+
+UPLOAD_DIR = Path("data/raw")
+UPLOAD_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+
+@router.post("/upload")
+async def upload_document(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+
+    destination = (
+        UPLOAD_DIR /
+        file.filename
+    )
+
+    content = await file.read()
+
+    destination.write_bytes(content)
+
+    document = Document(
+        filename=file.filename,
+        file_path=str(destination),
+        status="uploaded"
+    )
+
+    db.add(document)
+
+    db.commit()
+
+    db.refresh(document)
+
+    background_tasks.add_task(
+        process_document,
+        db,
+        document
+    )
+
+    return {
+        "document_id": document.id,
+        "filename": document.filename,
+        "status": "processing"
+    }
+```
+
+---
+
+## 26. Well API
+
+`backend/app/routers/wells.py`
+
+```python
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException
+)
+
+from sqlalchemy.orm import Session
+
+from ..database import get_db
+from ..models import Well
+from ..services.geo_service import (
+    nearby_wells
+)
+
+from ..config import settings
+
+
+router = APIRouter(
+    prefix="/wells",
+    tags=["Wells"]
+)
+
+
+@router.get("/")
+def list_wells(
+    db: Session = Depends(get_db)
+):
+
+    return db.query(
+        Well
+    ).all()
+
+
+@router.get("/{well_id}")
+def get_well(
+    well_id: int,
+    db: Session = Depends(get_db)
+):
+
+    well = db.query(
+        Well
+    ).filter(
+        Well.id == well_id
+    ).first()
+
+    if not well:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Well not found"
+        )
+
+    return well
+
+
+@router.get("/nearby/search")
+def search_nearby_wells(
+    latitude: float,
+    longitude: float,
+    radius_km: float = None,
+    db: Session = Depends(get_db)
+):
+
+    if radius_km is None:
+        radius_km = (
+            settings.nearby_radius_km
+        )
+
+    wells = db.query(
+        Well
+    ).all()
+
+    results = nearby_wells(
+        wells,
+        latitude,
+        longitude,
+        radius_km
+    )
+
+    return [
+        {
+            "well_id": item["well"].id,
+            "well_name": item["well"].well_name,
+            "distance_km": item["distance_km"]
+        }
+        for item in results
+    ]
+```
+
+---
+
+## 27. Intelligence API
+
+`backend/app/routers/intelligence.py`
+
+```python
+from fastapi import APIRouter
+
+from ..services.risk_service import (
+    classify_risk
+)
+
+
+router = APIRouter(
+    prefix="/intelligence",
+    tags=["Intelligence"]
+)
+
+
+@router.get("/health")
+def intelligence_health():
+
+    return {
+        "module": "NWIS Intelligence Engine",
+        "status": "operational"
+    }
+
+
+@router.post("/risk")
+
+def calculate_risk(
+    event_score: float
+):
+
+    risk = classify_risk(
+        event_score
+    )
+
+    return {
+        "score": event_score,
+        "risk_level": risk
+    }
+```
+
+---
+
+## 28. Main FastAPI Application
+
+`backend/app/main.py`
+
+```python
+from fastapi import FastAPI
+
+from .database import (
+    Base,
+    engine
+)
+
+from .routers import (
+    documents,
+    wells,
+    intelligence
+)
+
+
+Base.metadata.create_all(
+    bind=engine
+)
+
+
+app = FastAPI(
+    title="NWIS Backend",
+    description=(
+        "Nearby Wells Intelligence System "
+        "and eRTMAC backend"
+    ),
+    version="1.0.0"
+)
+
+
+app.include_router(
+    documents.router
+)
+
+app.include_router(
+    wells.router
+)
+
+app.include_router(
+    intelligence.router
+)
+
+
+@app.get("/")
+def root():
+
+    return {
+        "system": "NWIS",
+        "status": "online",
+        "version": "1.0.0"
+    }
+
+
+@app.get("/health")
+def health():
+
+    return {
+        "status": "healthy"
+    }
+```
+
+---
+
+## 29. Requirements
+
+`backend/requirements.txt`
+
+```text
+fastapi
+uvicorn[standard]
+python-multipart
+
+sqlalchemy
+pydantic
+pydantic-settings
+
+openai
+
+python-dotenv
+
+numpy
+pandas
+
+scikit-learn
+
+pillow
+pymupdf
+pytesseract
+
+geopandas
+shapely
+
+pytest
+httpx
+```
+
+For the first version, you can install:
+
+```bash
+cd eRTMAC-NWIS
+cd backend
+
+python -m venv .venv
+```
+
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Then:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Then the API will expose Swagger documentation at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+## 30. Complete Backend Request Flow
+
+When the user uploads a WCR:
+
+```text
+POST /documents/upload
+```
+
+↓
+
+```text
+Document stored
+```
+
+↓
+
+```text
+OCR Agent
+```
+
+↓
+
+```text
+OCRResult
+```
+
+↓
+
+```text
+Nemotron NLP Agent
+```
+
+↓
+
+```text
+JSON extraction
+```
+
+↓
+
+```text
+Pydantic validation
+```
+
+↓
+
+```text
+Normalization
+```
+
+↓
+
+```text
+Well database
+```
+
+↓
+
+```text
+Formation records
+```
+
+↓
+
+```text
+Drilling event records
+```
+
+↓
+
+```text
+Parameter records
+```
+
+↓
+
+```text
+Knowledge base
+```
+
+---
+
+## 31. Nearby Well Query
+
+Dashboard sends:
+
+```http
+GET /wells/nearby/search?latitude=23.12&longitude=75.12&radius_km=10
+```
+
+Backend:
+
+```text
+Coordinates
+     ↓
+Find wells within radius
+     ↓
+Calculate distance
+     ↓
+Formation similarity
+     ↓
+Depth similarity
+     ↓
+Historical-event similarity
+     ↓
+Calculate relevance score
+     ↓
+Rank wells
+```
+
+Result:
+
+```json
+[
+    {
+        "well_id": 12,
+        "well_name": "Well-A",
+        "distance_km": 2.1,
+        "similarity_score": 91.4
+    },
+    {
+        "well_id": 18,
+        "well_name": "Well-B",
+        "distance_km": 4.7,
+        "similarity_score": 84.2
+    }
+]
+```
+
+---
+
+## 32. The More Important Intelligence Flow
+
+Suppose the current drilling operation reaches:
+
+```text
+Depth = 2,150 m
+Formation = Formation-A
+```
+
+NWIS should do:
+
+```text
+Current drilling state
+        ↓
+Identify formation
+        ↓
+Find historical wells
+        ↓
+Find wells near current location
+        ↓
+Find same/similar formation
+        ↓
+Compare depth interval
+        ↓
+Retrieve historical events
+        ↓
+Calculate risk
+        ↓
+Generate recommendation
+```
+
+Example:
+
+```text
+CURRENT DEPTH
+2150 m
+
+FORMATION
+Formation-A
+
+NEARBY CORRELATED WELLS
+W-012
+W-018
+W-021
+
+HISTORICAL EVENTS
+W-012 → Lost circulation
+W-018 → Lost circulation
+W-021 → No major event
+
+RISK
+HIGH
+
+REASON
+2 of 3 correlated wells experienced
+lost circulation in a similar interval.
+
+RECOMMENDATION
+Review historical lost-circulation events
+and associated drilling parameters before
+proceeding through the interval.
+```
+
+That is the core of **NWIS intelligence**.
+
+---
+
+## 33. Real-Time eRTMAC Layer
+
+Once the historical intelligence is working, connect live drilling parameters.
+
+Input:
+
+```json
+{
+    "well_id": 101,
+    "timestamp": "2026-10-05T21:30:00",
+    "depth": 2152.4,
+    "rop": 17.2,
+    "wob": 13.5,
+    "rpm": 118,
+    "torque": 42.3,
+    "mud_weight": 1.19,
+    "flow_rate": 820
+}
+```
+
+The backend performs:
+
+```text
+Live data
+   ↓
+Validate
+   ↓
+Current formation
+   ↓
+Historical correlated wells
+   ↓
+Historical parameter ranges
+   ↓
+Anomaly detection
+   ↓
+Risk engine
+   ↓
+Alert
+```
+
+---
+
+## 34. Real-Time API
+
+`backend/app/routers/realtime.py`
+
+```python
+from fastapi import APIRouter
+
+from pydantic import BaseModel
+
+
+router = APIRouter(
+    prefix="/realtime",
+    tags=["Real-time"]
+)
+
+
+class DrillingState(BaseModel):
+
+    well_id: int
+
+    depth: float
+
+    rop: float | None = None
+
+    wob: float | None = None
+
+    rpm: float | None = None
+
+    torque: float | None = None
+
+    mud_weight: float | None = None
+
+    flow_rate: float | None = None
+
+    standpipe_pressure: float | None = None
+
+
+@router.post("/state")
+def receive_drilling_state(
+    state: DrillingState
+):
+
+    return {
+        "status": "received",
+        "well_id": state.well_id,
+        "depth": state.depth
+    }
+```
+
+Then add it to `main.py`:
+
+```python
+from .routers import realtime
+
+app.include_router(
+    realtime.router
+)
+```
+
+---
+
+## 35. Eventually the Real-Time Engine Becomes
+
+```text
+                LIVE DRILLING DATA
+                       │
+                       ▼
+               Parameter Validation
+                       │
+                       ▼
+                 Current Depth
+                       │
+             ┌─────────┴─────────┐
+             ▼                   ▼
+       Current Formation     Historical Wells
+             │                   │
+             └─────────┬─────────┘
+                       ▼
+                Correlation Engine
+                       │
+                       ▼
+                  Risk Engine
+                       │
+              ┌────────┴────────┐
+              ▼                 ▼
+           SAFE              WARNING
+                                │
+                                ▼
+                             ALERT
+                                │
+                                ▼
+                         Recommendation
+```
+
+---
+
+## 36. RAG / Historical Evidence Layer
+
+The RAG layer should be used for questions such as:
+
+> "What happened in nearby wells when they entered this formation?"
+
+or:
+
+> "Show previous wells that experienced stuck pipe around this depth."
+
+The retrieval sequence should be:
+
+```text
+User Question
+      ↓
+Question parser
+      ↓
+Structured database search
+      ↓
+Nearby well filtering
+      ↓
+Formation filtering
+      ↓
+Depth filtering
+      ↓
+Document/event retrieval
+      ↓
+Optional vector search
+      ↓
+Nemotron
+      ↓
+Evidence-backed answer
+```
+
+**Do not start with vector RAG alone.**
+
+The structured database should remain the primary source for numeric and spatial information.
+
+---
+
+## 37. RAG Response Format
+
+The backend should force the AI to answer like:
+
+```json
+{
+    "answer": "Two nearby wells experienced...",
+    "evidence": [
+        {
+            "well_id": 12,
+            "event": "lost_circulation",
+            "depth": 2140,
+            "source_document": "WCR_12.pdf",
+            "page": 43
+        }
+    ],
+    "confidence": 0.89
+}
+```
+
+That is much safer than:
+
+```text
+LLM generated paragraph
+```
+
+with no evidence.
+
+---
+
+## 38. Final API Structure
+
+Your backend should eventually expose:
+
+```text
+/api
+│
+├── /documents
+│   ├── POST /upload
+│   ├── GET /{id}
+│   └── GET /{id}/status
+│
+├── /wells
+│   ├── GET /
+│   ├── GET /{id}
+│   ├── GET /nearby/search
+│   └── GET /{id}/history
+│
+├── /formations
+│   ├── GET /{well_id}
+│   └── GET /correlated
+│
+├── /events
+│   ├── GET /{well_id}
+│   └── GET /similar
+│
+├── /intelligence
+│   ├── POST /nearby-analysis
+│   ├── POST /correlation
+│   ├── POST /risk
+│   └── POST /recommendation
+│
+├── /realtime
+│   ├── POST /state
+│   └── GET /alerts
+│
+└── /chat
+    └── POST /query
+```
+
+---
+
+## 39. End-to-End Intelligence API
+
+Eventually the frontend shouldn't have to call 10 different APIs to understand a well.
+
+Create:
+
+```text
+POST /intelligence/analyze
+```
+
+Input:
+
+```json
+{
+    "latitude": 23.1234,
+    "longitude": 75.1234,
+    "depth": 2150,
+    "formation": "Formation-A"
+}
+```
+
+Output:
+
+```json
+{
+    "location": {
+        "latitude": 23.1234,
+        "longitude": 75.1234
+    },
+    "current_depth": 2150,
+    "formation": "Formation-A",
+
+    "nearby_wells": [
+        {
+            "well_id": 12,
+            "distance_km": 2.1,
+            "similarity": 91.4
+        }
+    ],
+
+    "historical_events": [
+        {
+            "type": "lost_circulation",
+            "count": 2
+        }
+    ],
+
+    "risk": {
+        "level": "high",
+        "score": 3.7
+    },
+
+    "recommendations": [
+        "Review historical lost-circulation events."
+    ]
+}
+```
+
+This becomes the main API consumed by your dashboard.
+
+---
+
+## 40. Implementation Phases
+
+### Phase 1 — Existing OCR Agent
+
+**Tasks 1–10**
+
+1. Finalize OCR folder
+2. Connect PDF extraction
+3. Connect scanned-image OCR
+4. Text cleaning
+5. Page tracking
+6. OCR confidence
+7. Document metadata
+8. Batch processing
+9. OCR testing
+10. Finalize OCR API
+
+---
+
+### Phase 2 — NLP/Nemotron Agent
+
+**Tasks 11–20**
+
+11. Define extraction schema
+12. Create Nemotron prompt
+13. Connect Nemotron
+14. Extract well metadata
+15. Extract coordinates
+16. Extract depth/TVD
+17. Extract formations
+18. Extract drilling events
+19. Extract drilling parameters
+20. Validate JSON
+
+---
+
+### Phase 3 — Knowledge Base
+
+**Tasks 21–30**
+
+21. Database
+22. Well table
+23. Formation table
+24. Event table
+25. Parameter table
+26. Document table
+27. OCR table
+28. Normalization
+29. Duplicate detection
+30. Database tests
+
+---
+
+### Phase 4 — Nearby Well Intelligence
+
+**Tasks 31–40**
+
+31. Coordinate validation
+32. Distance calculation
+33. Radius search
+34. Nearby-well API
+35. Formation matching
+36. Depth matching
+37. Event matching
+38. Similarity score
+39. Well ranking
+40. Test with sample wells
+
+---
+
+### Phase 5 — Risk Engine
+
+**Tasks 41–50**
+
+41. Event taxonomy
+42. Risk rules
+43. Severity calculation
+44. Historical frequency
+45. Formation risk
+46. Depth correlation
+47. Parameter anomaly detection
+48. Risk score
+49. Risk classification
+50. Risk API
+
+---
+
+### Phase 6 — Recommendation Engine
+
+**Tasks 51–60**
+
+51. Historical evidence retrieval
+52. Similar-well retrieval
+53. Risk-to-recommendation mapping
+54. Recommendation generation
+55. Evidence attachment
+56. Confidence score
+57. Explainability
+58. Recommendation API
+59. Testing
+60. Integration
+
+---
+
+### Phase 7 — RAG Assistant
+
+**Tasks 61–70**
+
+61. Document chunking
+62. Metadata preservation
+63. Embedding generation
+64. Vector storage
+65. Retrieval
+66. Structured + vector hybrid retrieval
+67. Nemotron answer generation
+68. Evidence citations
+69. Hallucination controls
+70. Chat API
+
+---
+
+### Phase 8 — eRTMAC
+
+**Tasks 71–80**
+
+71. Live state schema
+72. Real-time ingestion
+73. Parameter validation
+74. Depth matching
+75. Historical comparison
+76. Anomaly detection
+77. Real-time risk
+78. Alert generation
+79. Alert API
+80. End-to-end test
+
+---
+
+### Phase 9 — Dashboard
+
+**Tasks 81–90**
+
+81. Map
+82. Well markers
+83. Nearby well search
+84. Well profile
+85. Formation visualization
+86. Historical event timeline
+87. Risk panel
+88. Recommendation panel
+89. AI assistant
+90. Final integration
+
+---
+
+## 41. What Nemotron Should and Should NOT Do
+
+### Nemotron SHOULD do
+
+```text
+OCR text understanding
+        ↓
+Information extraction
+        ↓
+Document summarization
+        ↓
+Historical event interpretation
+        ↓
+Natural-language explanation
+        ↓
+RAG answer generation
+```
+
+### Nemotron SHOULD NOT directly control
+
+```text
+Coordinates validation
+Distance calculations
+Unit conversion
+Database integrity
+Risk thresholds
+Spatial filtering
+Numerical calculations
+Final alert state
+```
+
+Those should be deterministic Python/backend logic.
+
+---
+
+## 42. Model Architecture
+
+Your final AI layer therefore becomes:
+
+```text
+                    NEMOTRON
+                       │
+       ┌───────────────┼────────────────┐
+       │               │                │
+       ▼               ▼                ▼
+     NLP              RAG          Explanation
+ Extraction         Assistant       Generation
+       │               │                │
+       └───────────────┼────────────────┘
+                       ▼
+                STRUCTURED OUTPUT
+                       │
+                       ▼
+              DETERMINISTIC ENGINE
+                       │
+        ┌──────────────┼───────────────┐
+        ▼              ▼               ▼
+   Geo Engine     Correlation       Risk Engine
+        │              │               │
+        └──────────────┼───────────────┘
+                       ▼
+               Recommendation
+                       │
+                       ▼
+                  Dashboard
+```
+
+This architecture is much stronger for your project presentation because you can explain exactly **where AI is used and where conventional software engineering is used**.
+
+---
+
+## 43. Research-to-Implementation Mapping
+
+Your current OCR/NLP research foundation maps directly to:
+
+```text
+Research:
+Historical well record information extraction
+                 ↓
+NWIS implementation:
+                 ↓
+PDF/WCR/DDR
+       ↓
+OCR
+       ↓
+Nemotron extraction
+       ↓
+JSON
+       ↓
+Validation
+       ↓
+Well knowledge base
+```
+
+The research approach of extracting structured well information from historical records is therefore the foundation of the **document intelligence layer**. 
+
+The other research papers you are reviewing should then be mapped individually to:
+
+```text
+Paper
+ ↓
+Problem addressed
+ ↓
+Input variables
+ ↓
+Method
+ ↓
+NWIS module
+ ↓
+Algorithm
+ ↓
+Validation metric
+```
+
+We should **not claim that a paper validates a risk rule until we have actually implemented and tested that method**.
+
+---
+
+## 44. Final Folder-to-Function Mapping
+
+The most important thing for your development is this:
+
+```text
+eRTMAC-NWIS
+│
+├── ocr_agent
+│       ↓
+│   Document → Text
+│
+├── nlp_agent
+│       ↓
+│   Text → Structured information
+│
+├── backend
+│       ↓
+│   Structured information → Intelligence
+│
+├── database
+│       ↓
+│   Persistent knowledge
+│
+├── intelligence
+│       ↓
+│   Nearby + correlation + risk
+│
+├── realtime
+│       ↓
+│   Live drilling data → alerts
+│
+└── frontend
+        ↓
+    Visualization
+```
+
+So **OCR, NLP, database, intelligence and frontend are not separate projects**. They are modules of the same NWIS system.
+
+---
+
+## 45. The Actual Development Order I Recommend for You
+
+Because you have limited time, **do not implement all 90 tasks simultaneously**.
+
+Start with this exact chain:
+
+```text
+STEP 1
+Existing eRTMAC-NWIS project
+        ↓
+STEP 2
+OCR Agent
+        ↓
+STEP 3
+NLP/Nemotron Agent
+        ↓
+STEP 4
+JSON validation
+        ↓
+STEP 5
+PostgreSQL/SQLite database
+        ↓
+STEP 6
+Insert historical wells
+        ↓
+STEP 7
+Nearby-well search
+        ↓
+STEP 8
+Depth + formation correlation
+        ↓
+STEP 9
+Historical event/risk engine
+        ↓
+STEP 10
+Recommendation engine
+        ↓
+STEP 11
+RAG
+        ↓
+STEP 12
+Real-time eRTMAC
+        ↓
+STEP 13
+FastAPI integration
+        ↓
+STEP 14
+Dashboard
+        ↓
+STEP 15
+End-to-end testing
+```
+
+### Most important immediate milestone
+
+Your **first complete vertical slice** should be:
+
+```text
+ONE WCR/PDF
+     ↓
+OCR
+     ↓
+Nemotron
+     ↓
+Structured JSON
+     ↓
+Database
+     ↓
+Find nearby well
+     ↓
+Find historical event
+     ↓
+Calculate risk
+     ↓
+Generate recommendation
+     ↓
+Return JSON through FastAPI
+```
+
+Once that works for **one document and two or more wells**, we scale it to the entire historical dataset.
+
+That is the correct way to build NWIS without getting stuck trying to finish the whole system at once.
