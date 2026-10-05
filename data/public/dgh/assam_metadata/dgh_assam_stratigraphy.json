@@ -1,0 +1,59 @@
+{
+  "basin": "Assam-Arakan Basin (Upper Assam Shelf)",
+  "regulatory_body": "Directorate General of Hydrocarbons (DGH), India",
+  "target_fields": [
+    "Nahorkatiya",
+    "Moran",
+    "Baghjan",
+    "Lakwa",
+    "Rudrasagar"
+  ],
+  "formations": [
+    {
+      "name": "Dihing Group",
+      "age": "Pliocene-Pleistocene",
+      "lithology": "Pebble beds, soft sands"
+    },
+    {
+      "name": "Namsang Formation",
+      "age": "Mio-Pliocene",
+      "lithology": "Sandstones and claystones"
+    },
+    {
+      "name": "Girujan Clay",
+      "age": "Miocene",
+      "lithology": "Mottled sticky gumbo clay (bit balling hazard)"
+    },
+    {
+      "name": "Upper Tipam Sandstone",
+      "age": "Miocene",
+      "lithology": "Subarkosic sandstone (depleted pressure, differential sticking hazard)"
+    },
+    {
+      "name": "Lower Tipam Sandstone",
+      "age": "Miocene",
+      "lithology": "Sandstone with shale bands"
+    },
+    {
+      "name": "Barail Coal-Shale Unit",
+      "age": "Oligocene",
+      "lithology": "Carbonaceous shale & coal seams (gas kick / overpressure hazard)"
+    },
+    {
+      "name": "Barail Main Sand Unit",
+      "age": "Oligocene",
+      "lithology": "Productive quartzose sandstone reservoirs"
+    },
+    {
+      "name": "Kopili Formation",
+      "age": "Late Eocene",
+      "lithology": "Fissile splintery shale, marl (borehole instability, cementing losses)"
+    },
+    {
+      "name": "Sylhet Limestone",
+      "age": "Early Eocene",
+      "lithology": "Hard nummulitic limestone (lost circulation)"
+    }
+  ],
+  "provenance": "PUBLIC (DGH NDR)"
+}

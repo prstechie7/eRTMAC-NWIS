@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "basin": "Upper Assam Shelf",
+    "operator": "Oil India Limited",
+    "description": "Geologically calibrated synthetic offset well dataset for Nahorkatiya, Moran, and Baghjan fields",
+    "calibrated_from": ["SPE-197489-MS", "SPE-185408-MS", "Alam et al. (2019) Geophysical Journal International"],
+    "coordinate_system": "EPSG:4326 (WGS84)",
+    "elevation_datum": "Kelly Bushing (KB) AMSL"
+  },
+  "fields": [
+    {
+      "field_name": "Nahorkatiya",
+      "formation_dip_deg": 3.5,
+      "dip_azimuth_deg": 145.0,
+      "active_wells": ["SYN-NHK-05"],
+      "offset_wells": ["SYN-NHK-01", "SYN-NHK-02", "SYN-NHK-03", "SYN-NHK-04", "SYN-NHK-06", "SYN-NHK-07"]
+    },
+    {
+      "field_name": "Moran",
+      "formation_dip_deg": 4.2,
+      "dip_azimuth_deg": 150.0,
+      "offset_wells": ["SYN-MORAN-01", "SYN-MORAN-02"]
+    },
+    {
+      "field_name": "Baghjan",
+      "formation_dip_deg": 2.5,
+      "dip_azimuth_deg": 160.0,
+      "offset_wells": ["SYN-BGJ-01"]
+    }
+  ],
+  "wells": [
+    {
+      "well_id": "c1f7a012-3b4c-4e89-9a11-000000000001",
+      "uwi": "IN-OIL-NHK-SYN-001",
+      "well_name": "SYN-NHK-01",
+      "field_name": "Nahorkatiya",
+      "surface_lat": 27.283100,
+      "surface_lon": 95.342200,
+      "kb_elevation_m": 112.5,
+      "total_depth_md_m": 4520.0,
+      "status": "COMPLETED",
+      "spud_date": "2023-04-15",
+      "formation_tops": [
+        {"name": "Dihing Group", "top_md_m": 0.0, "top_tvdss_m": -112.5, "pore_pressure_sg": 1.00, "fracture_gradient_sg": 1.45},
+        {"name": "Namsang Formation", "top_md_m": 450.0, "top_tvdss_m": 337.5, "pore_pressure_sg": 1.02, "fracture_gradient_sg": 1.55},
+        {"name": "Girujan Clay", "top_md_m": 1150.0, "top_tvdss_m": 1037.5, "pore_pressure_sg": 1.04, "fracture_gradient_sg": 1.70},
+        {"name": "Upper Tipam Sandstone", "top_md_m": 2100.0, "top_tvdss_m": 1987.5, "pore_pressure_sg": 0.92, "fracture_gradient_sg": 1.82},
+        {"name": "Lower Tipam Sandstone", "top_md_m": 2680.0, "top_tvdss_m": 2567.5, "pore_pressure_sg": 0.95, "fracture_gradient_sg": 1.88},
+        {"name": "Barail Coal-Shale Unit", "top_md_m": 2950.0, "top_tvdss_m": 2837.5, "pore_pressure_sg": 1.35, "fracture_gradient_sg": 1.95},
+        {"name": "Barail Main Sand Unit", "top_md_m": 3250.0, "top_tvdss_m": 3137.5, "pore_pressure_sg": 1.10, "fracture_gradient_sg": 1.92},
+        {"name": "Kopili Formation", "top_md_m": 3750.0, "top_tvdss_m": 3637.5, "pore_pressure_sg": 1.52, "fracture_gradient_sg": 2.05},
+        {"name": "Sylhet Limestone", "top_md_m": 4150.0, "top_tvdss_m": 4037.5, "pore_pressure_sg": 1.22, "fracture_gradient_sg": 2.10}
+      ],
+      "historical_hazards": [
+        {
+          "hazard_id": "haz-001-01",
+          "depth_md_m": 2448.5,
+          "depth_tvdss_m": 2179.0,
+          "formation_name": "Upper Tipam Sandstone",
+          "hazard_type": "DIFFERENTIAL_STICKING",
+          "severity_level": 4,
+          "npt_hours": 38.5,
+          "mud_density_sg": 1.18,
+          "failure_cause": "Pipe stationary for 45 min during directional single-shot survey in depleted subarkosic sand (PP 0.88 SG). Overbalance pressure exceeded 1,120 psi.",
+          "mitigation_action": "Spotted 40 bbls pipe-freeing lubricant pill (glycol/oil based); reduced mud weight to 1.10 SG; established circulation and rotated out with 55 RPM.",
+          "report_reference": "DDR-NHK-SYN01-Day-42"
+        },
+        {
+          "hazard_id": "haz-001-02",
+          "depth_md_m": 3020.0,
+          "depth_tvdss_m": 2907.5,
+          "formation_name": "Barail Coal-Shale Unit",
+          "hazard_type": "GAS_KICK",
+          "severity_level": 4,
+          "npt_hours": 24.0,
+          "mud_density_sg": 1.24,
+          "failure_cause": "Penetrated overpressured coal seam; pit gain of 14 bbls observed with total gas jumping from 2.5% to 28.5%.",
+          "mitigation_action": "Shut in well on annular preventer; SICP 420 psi, SIDPP 310 psi; circulated out influx using Wait-and-Weight kill method with 1.38 SG weighted mud.",
+          "report_reference": "DDR-NHK-SYN01-Day-61"
+        }
+      ]
+    },
+    {
+      "well_id": "c1f7a012-3b4c-4e89-9a11-000000000002",
+      "uwi": "IN-OIL-NHK-SYN-002",
+      "well_name": "SYN-NHK-02",
+      "field_name": "Nahorkatiya",
+      "surface_lat": 27.291500,
+      "surface_lon": 95.351000,
+      "kb_elevation_m": 114.0,
+      "total_depth_md_m": 4380.0,
+      "status": "COMPLETED",
+      "spud_date": "2023-08-10",
+      "historical_hazards": [
+        {
+          "hazard_id": "haz-002-01",
+          "depth_md_m": 1420.0,
+          "depth_tvdss_m": 1306.0,
+          "formation_name": "Girujan Clay",
+          "hazard_type": "BIT_BALLING",
+          "severity_level": 3,
+          "npt_hours": 14.5,
+          "mud_density_sg": 1.14,
+          "failure_cause": "Hydratable plastic clay accreted around PDC bit cutters during connection; ROP dropped from 22 m/hr to 1.8 m/hr; MSE spiked 3.4x.",
+          "mitigation_action": "Pumped 25 bbls low-viscosity surfactant pill at maximum flow rate (750 GPM) to shear clay; increased flow rate and nozzle total flow area (TFA).",
+          "report_reference": "DDR-NHK-SYN02-Day-18"
+        },
+        {
+          "hazard_id": "haz-002-02",
+          "depth_md_m": 2465.0,
+          "depth_tvdss_m": 2185.0,
+          "formation_name": "Upper Tipam Sandstone",
+          "hazard_type": "DIFFERENTIAL_STICKING",
+          "severity_level": 4,
+          "npt_hours": 42.0,
+          "mud_density_sg": 1.16,
+          "failure_cause": "Differential sticking across porous thief interval under 1,050 psi overbalance during MWD tool battery replacement.",
+          "mitigation_action": "Spotted 45 bbls hydrocarbon-free lubricant soak; applied 80 klbs maximum allowable overpull and jarred upward 12 cycles until string freed.",
+          "report_reference": "DDR-NHK-SYN02-Day-39"
+        }
+      ]
+    },
+    {
+      "well_id": "c1f7a012-3b4c-4e89-9a11-000000000005",
+      "uwi": "IN-OIL-NHK-SYN-005",
+      "well_name": "SYN-NHK-05",
+      "field_name": "Nahorkatiya",
+      "surface_lat": 27.280000,
+      "surface_lon": 95.340000,
+      "kb_elevation_m": 112.0,
+      "total_depth_md_m": 4500.0,
+      "status": "DRILLING",
+      "spud_date": "2026-09-12",
+      "current_bit_md_m": 2410.0,
+      "current_bit_tvdss_m": 2180.5,
+      "notes": "ACTIVE DRILLING TARGET WELL FOR SIH LIVE DEMO SCENARIO"
+    }
+  ]
+}

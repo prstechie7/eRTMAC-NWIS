@@ -1,0 +1,6 @@
+{
+  "model_type": "RuleBasedStatisticalFallback",
+  "status": "ML model unavailable \u2014 rule/statistical mode",
+  "risk_type": "CEMENTING_ISSUE",
+  "provenance": "SYNTHETIC"
+}

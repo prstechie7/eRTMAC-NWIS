@@ -1,0 +1,470 @@
+@import "tailwindcss";
+
+/* =============================================
+   eRTMAC-NWIS · Professional Light Theme
+   Design System v2.0
+   ============================================= */
+
+:root {
+  /* Brand Colors */
+  --pine: #1a5c45;
+  --pine-mid: #226b50;
+  --pine-light: #2d8a67;
+  --pine-pale: #e8f5ef;
+  --amber: #d97706;
+  --amber-light: #f59e0b;
+  --amber-pale: #fffbeb;
+  --amber-border: #fde68a;
+
+  /* Surface Palette */
+  --canvas: #f4f6f9;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-3: #f1f5f9;
+
+  /* Borders */
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Semantic */
+  --success: #059669;
+  --success-pale: #ecfdf5;
+  --success-border: #a7f3d0;
+  --warning: #d97706;
+  --warning-pale: #fffbeb;
+  --warning-border: #fde68a;
+  --danger: #dc2626;
+  --danger-pale: #fef2f2;
+  --danger-border: #fca5a5;
+  --info: #2563eb;
+  --info-pale: #eff6ff;
+  --info-border: #bfdbfe;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 28px rgba(15, 23, 42, 0.10), 0 4px 10px rgba(15, 23, 42, 0.06);
+  --shadow-xl: 0 20px 48px rgba(15, 23, 42, 0.12), 0 8px 16px rgba(15, 23, 42, 0.07);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+}
+
+/* ─────────────── Base Reset ─────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-feature-settings: 'cv01', 'cv03', 'cv04';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.font-mono, code, pre {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+/* ─────────────── Card System ─────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.card-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* ─────────────── Panel Icon Chips ─────────────── */
+.icon-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.icon-chip-pine {
+  background: var(--pine-pale);
+  color: var(--pine);
+  border: 1px solid #b2d8c8;
+}
+
+.icon-chip-amber {
+  background: var(--amber-pale);
+  color: var(--amber);
+  border: 1px solid var(--amber-border);
+}
+
+.icon-chip-danger {
+  background: var(--danger-pale);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+.icon-chip-info {
+  background: var(--info-pale);
+  color: var(--info);
+  border: 1px solid var(--info-border);
+}
+
+/* ─────────────── Badges ─────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+
+.badge-success {
+  background: var(--success-pale);
+  color: var(--success);
+  border-color: var(--success-border);
+}
+
+.badge-warning {
+  background: var(--warning-pale);
+  color: var(--warning);
+  border-color: var(--warning-border);
+}
+
+.badge-danger {
+  background: var(--danger-pale);
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+
+.badge-info {
+  background: var(--info-pale);
+  color: var(--info);
+  border-color: var(--info-border);
+}
+
+.badge-pine {
+  background: var(--pine-pale);
+  color: var(--pine);
+  border-color: #b2d8c8;
+}
+
+.badge-neutral {
+  background: var(--surface-3);
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
+}
+
+/* ─────────────── Metric Tiles ─────────────── */
+.metric-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  transition: box-shadow 0.2s ease;
+}
+
+.metric-tile:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.metric-tile-alert {
+  background: var(--danger-pale);
+  border-color: var(--danger-border);
+}
+
+.metric-tile-warn {
+  background: var(--warning-pale);
+  border-color: var(--warning-border);
+}
+
+.metric-tile-ok {
+  background: var(--success-pale);
+  border-color: var(--success-border);
+}
+
+/* ─────────────── Buttons ─────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--pine);
+  color: white;
+  border-color: var(--pine);
+}
+
+.btn-primary:hover {
+  background: var(--pine-mid);
+}
+
+.btn-amber {
+  background: var(--amber);
+  color: white;
+  border-color: var(--amber);
+}
+
+.btn-amber:hover {
+  background: var(--amber-light);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
+}
+
+.btn-outline:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+/* ─────────────── Alert Banner ─────────────── */
+.alert-critical {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%);
+  border: 1px solid #fca5a5;
+  border-left: 4px solid var(--danger);
+  border-radius: var(--radius-md);
+}
+
+.alert-warning {
+  background: linear-gradient(135deg, #fffbeb 0%, #fefce8 100%);
+  border: 1px solid var(--amber-border);
+  border-left: 4px solid var(--amber);
+  border-radius: var(--radius-md);
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+  border: 1px solid var(--info-border);
+  border-left: 4px solid var(--info);
+  border-radius: var(--radius-md);
+}
+
+/* ─────────────── Progress Bar ─────────────── */
+.progress-track {
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  height: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─────────────── Risk Bar Colors ─────────────── */
+.fill-success { background: var(--success); }
+.fill-warning { background: var(--warning); }
+.fill-danger  { background: var(--danger); }
+.fill-muted   { background: var(--border-strong); }
+
+/* ─────────────── Scrollbar ─────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-3); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ─────────────── Animations ─────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulseRing {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.08); opacity: 0.8; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.04); }
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-8px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+.anim-fade-up   { animation: fadeSlideUp 0.45s ease-out forwards; }
+.anim-fade-in   { animation: fadeIn 0.35s ease-out forwards; }
+.anim-breathe   { animation: breathe 2.5s ease-in-out infinite; }
+.anim-pulse-dot { animation: pulseRing 1.8s ease-in-out infinite; }
+
+/* ─────────────── Live Dot ─────────────── */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulseRing 1.6s ease-in-out infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.live-dot-amber {
+  background: var(--amber);
+}
+
+/* ─────────────── Range Slider ─────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--border-strong);
+  cursor: pointer;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--pine);
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* ─────────────── SVG Map ─────────────── */
+.map-canvas {
+  background: linear-gradient(145deg, #e8f0f7 0%, #dce8f3 50%, #d4e4f0 100%);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+/* ─────────────── Checklist Items ─────────────── */
+.checklist-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--surface);
+}
+
+.checklist-item:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.checklist-item.checked {
+  background: var(--success-pale);
+  border-color: var(--success-border);
+}
+
+/* ─────────────── GSAP Ready Classes ─────────────── */
+.gsap-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.gsap-reveal-left {
+  opacity: 0;
+  transform: translateX(-16px);
+}

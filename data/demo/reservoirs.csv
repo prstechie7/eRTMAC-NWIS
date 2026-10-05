@@ -1,0 +1,4 @@
+reservoir_id,formation_id,reservoir_name,pressure,temperature,porosity,permeability,fluid_type,depletion_indicator,pressure_window_min,pressure_window_max
+res-01,fmt-04,Tipam Main Sand,2850.0,75.0,18.5,250.0,OIL,0.35,2100.0,3400.0
+res-02,fmt-06,Barail Coal-Shale Gas Horizon,4250.0,92.0,14.0,45.0,GAS,0.05,3800.0,4900.0
+res-03,fmt-07,Barail 3rd Sand,3450.0,88.0,21.0,320.0,OIL,0.2,3000.0,4100.0

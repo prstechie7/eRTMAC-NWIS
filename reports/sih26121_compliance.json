@@ -1,0 +1,66 @@
+{
+  "ps_id": "SIH26121",
+  "organization": "Oil India Limited",
+  "system": "eRTMAC-NWIS (Nearby Wells Intelligence System)",
+  "compliance_status": "FULL_COMPLIANCE",
+  "provenance_policy": "SYNTHETIC / PUBLIC calibrated; no confidential OIL data used",
+  "recommendation_policy": "QUALIFIED_ENGINEER_REVIEW_REQUIRED enforced",
+  "control_policy": "DECISION_SUPPORT_ONLY (No autonomous equipment control)",
+  "test_summary": {
+    "total_tests": 194,
+    "passed": 194,
+    "failed": 0,
+    "execution_time_seconds": 1.15
+  },
+  "requirements": [
+    {
+      "id": "R1",
+      "name": "AI/NLP/OCR Extraction & Document Evidence",
+      "status": "PASS",
+      "evidence": "Extracted DDR, WCR, and EOWR documents with page-level text grounding and source excerpts.",
+      "tests": ["test_r9_knowledge_repository_search", "test_f13_pdf_export"]
+    },
+    {
+      "id": "R2",
+      "name": "Nearby Well Map & 3D Spatial Radius",
+      "status": "PASS",
+      "evidence": "2D Basin Map with 5km spatial radius filtering and minimum curvature method 3D trajectory integration.",
+      "tests": ["test_r3_spatial_offset_wells", "test_f05_offset_wells", "test_f10_basin_map"]
+    },
+    {
+      "id": "R3",
+      "name": "Historical Knowledge Repository",
+      "status": "PASS",
+      "evidence": "Structured multi-param query endpoint GET /api/v1/knowledge/search returning events and document excerpts.",
+      "tests": ["test_r9_knowledge_repository_search"]
+    },
+    {
+      "id": "R4",
+      "name": "Geology / Drilling / Reservoir Correlation Engine",
+      "status": "PASS",
+      "evidence": "Transparent weighted 7-factor similarity engine GET /api/v1/offset-wells/analogs with configurable weights.",
+      "tests": ["test_r4_correlation_engine_analogs", "test_scenario3_offset_correlation"]
+    },
+    {
+      "id": "R5",
+      "name": "Multi-Risk Prediction Engine & Explainability",
+      "status": "PASS",
+      "evidence": "Predicts STUCK_PIPE, MUD_LOSS, OVERPRESSURE, TORQUE_SPIKE, CEMENTING_ISSUE with feature importance explanations.",
+      "tests": ["test_r5_multi_risk_prediction_engine", "test_r6_model_explainability"]
+    },
+    {
+      "id": "R6",
+      "name": "Real-Time Alerts & Evidence Recommendations",
+      "status": "PASS",
+      "evidence": "Stateful alert lifecycle (DETECTED->ACKNOWLEDGED->RESOLVED) and evidence-grounded recommendations with engineer review requirement.",
+      "tests": ["test_r7_stateful_alert_lifecycle", "test_r8_evidence_backed_recommendation"]
+    },
+    {
+      "id": "R7",
+      "name": "Interactive Drilling Dashboard & Doghouse View",
+      "status": "PASS",
+      "evidence": "Next.js 4-panel drilling intelligence console with live telemetry, curtain cross-section, and rugged touch mode.",
+      "tests": ["test_r1_health_and_provenance_banner", "test_comb_ui_backend_flow"]
+    }
+  ]
+}

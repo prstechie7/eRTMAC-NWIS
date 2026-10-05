@@ -1,0 +1,32 @@
+{
+  "model_type": "RandomForestClassifier",
+  "model_version": "v1.0.0",
+  "risk_type": "STUCK_PIPE",
+  "provenance": "SYNTHETIC",
+  "metrics": {
+    "precision": 1.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "roc_auc": 1.0
+  },
+  "confusion_matrix": [
+    [
+      197,
+      0
+    ],
+    [
+      3,
+      0
+    ]
+  ],
+  "features": [
+    "torque",
+    "torque_diff",
+    "hookload",
+    "rop",
+    "rpm",
+    "ecd",
+    "is_depleted_sand"
+  ],
+  "trained_timestamp": "2026-09-30T09:39:27Z"
+}

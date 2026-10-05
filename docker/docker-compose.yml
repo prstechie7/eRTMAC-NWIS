@@ -1,0 +1,88 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────
+# eRTMAC-NWIS — Nearby Wells Intelligence System
+# Single-command startup for SIH hackathon demo
+# Usage: docker compose up -d --build
+# ─────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL 16 + PostGIS 3.4 + TimescaleDB 2.x + pgvector (all-in-one image) ──
+  db:
+    image: timescale/timescaledb-ha:pg16
+    container_name: nwis_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nwis
+      POSTGRES_PASSWORD: nwis_sih2026
+      POSTGRES_DB: nwis_drilling
+    ports:
+      - "5432:5432"
+    volumes:
+      - nwis_pgdata:/home/postgres/pgdata/data
+      - ./init:/docker-entrypoint-initdb.d     # SQL init scripts run on first boot
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nwis -d nwis_drilling"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ── FastAPI Backend ──────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: nwis_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://nwis:nwis_sih2026@db:5432/nwis_drilling
+      DATABASE_URL_SYNC: postgresql://nwis:nwis_sih2026@db:5432/nwis_drilling
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-dummy}       # Optional: for embedding generation
+      ENVIRONMENT: development
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../backend:/app                              # Hot-reload during development
+      - ../data:/app/data                            # Shared data mount
+
+  # ── Next.js Frontend ─────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: nwis_ui
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_MAPBOX_TOKEN: ${MAPBOX_TOKEN:-your_mapbox_token_here}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules                            # Prevent overwriting container node_modules
+      - /app/.next
+
+  # ── pgAdmin (optional, useful for judging demo) ───────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nwis_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@nwis.oil
+      PGADMIN_DEFAULT_PASSWORD: nwis_sih2026
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    profiles:
+      - admin    # Only starts when: docker compose --profile admin up
+
+volumes:
+  nwis_pgdata:
+    driver: local

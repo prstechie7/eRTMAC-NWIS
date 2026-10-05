@@ -1,0 +1,4 @@
+well_id,uwi,well_name,field,latitude,longitude,datum,total_depth_md,total_depth_tvd,well_type,status,operator,spud_date,completion_date,provenance_type
+VOLVE_NO_15_9_F_12,NO-15/9-F-12,15/9-F-12,Volve,58.4419,1.8863,KB,3420.0,3105.0,DEVELOPMENT,COMPLETED,Equinor,2008-02-14,2008-05-18,PUBLIC
+FORCE_15_9_13,NO-15/9-13,15/9-13,North Sea Block 15/9,58.3712,1.854,KB,3250.0,3210.0,EXPLORATION,COMPLETED,FORCE Consortium,2010-06-01,2010-09-12,PUBLIC
+NLOG_L07_01,NL-L07-01,L07-01,Offshore Netherlands,53.6021,4.2155,KB,2980.0,2920.0,APPRAISAL,COMPLETED,Nederlandse Aardolie Maatschappij (NAM),2005-04-10,2005-07-20,PUBLIC

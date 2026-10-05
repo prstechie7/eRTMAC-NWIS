@@ -1,0 +1,4 @@
+incident_id,well_id,depth_m,overbalance_psi,stationary_time_min,stuck_pipe_event,mitigation,provenance
+SP-001,GOS-WELL-A,2430.0,1150.0,50.0,1,Pipe worked with lubricant pill,PUBLIC
+SP-002,GOS-WELL-B,2620.0,450.0,10.0,0,Normal connection,PUBLIC
+SP-003,GOS-WELL-C,2890.0,1320.0,65.0,1,Acid wash spotted to free differential sticking,PUBLIC

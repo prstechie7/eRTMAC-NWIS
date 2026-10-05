@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-main: #F4F6F8;
+  --forest-dark: #0E3B28;
+  --forest-emerald: #10B981;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: #F4F6F8;
+  color: #1E293B;
+  overflow-x: hidden;
+}
+
+/* Custom Glassmorphism and Luxury Shadow System */
+.luxury-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 16px -4px rgba(0, 0, 0, 0.04);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.luxury-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 12px 28px -6px rgba(0, 0, 0, 0.06);
+}
+
+/* Donezo-style Deep Forest Green Highlight Card */
+.forest-hero-card {
+  background: linear-gradient(135deg, #09281B 0%, #0F3E2B 50%, #15573C 100%);
+  color: #FFFFFF;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 32px -8px rgba(14, 59, 40, 0.35);
+}
+
+/* Texture Pattern Fills matching Donezo reference */
+.hatch-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.08) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.hatch-pattern-dark {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(15, 23, 42, 0.07),
+    rgba(15, 23, 42, 0.07) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+/* Smooth sleek scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
