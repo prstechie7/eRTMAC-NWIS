@@ -59,7 +59,7 @@ export const GroundedAIAssistant: React.FC<{ activeDepthMd?: number }> = ({
 
   // Fetch Suggestions on mount
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/intelligence/query-suggestions")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/intelligence/query-suggestions`)
       .then((res) => res.json())
       .then((data: QuerySuggestion[]) => {
         setSuggestions(data);
@@ -98,7 +98,7 @@ export const GroundedAIAssistant: React.FC<{ activeDepthMd?: number }> = ({
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/intelligence/grounded-search", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/intelligence/grounded-search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

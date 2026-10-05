@@ -123,7 +123,7 @@ export const IndianLocationConsole: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/india/locate?lat=${lat}&lon=${lon}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/india/locate?lat=${lat}&lon=${lon}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to resolve location`);
       const json: LocationResponse = await res.json();
       setData(json);

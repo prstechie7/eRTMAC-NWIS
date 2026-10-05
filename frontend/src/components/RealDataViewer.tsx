@@ -44,12 +44,12 @@ export const RealDataViewer: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/data/sources")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/data/sources`)
       .then((r) => r.json())
       .then((d) => setSources(d))
       .catch(() => {});
 
-    fetch("http://localhost:8000/api/v1/data/dgh-wells")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/data/dgh-wells`)
       .then((r) => r.json())
       .then((d) => setDghWells(d))
       .catch(() => {});
@@ -57,7 +57,7 @@ export const RealDataViewer: React.FC = () => {
 
   const loadForceLogs = (wellName: string) => {
     setLoading(true);
-    fetch(`http://localhost:8000/api/v1/data/force-logs?well_name=${wellName}&limit=40`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/data/force-logs?well_name=${wellName}&limit=40`)
       .then((r) => r.json())
       .then((d) => {
         setForceLogs(d);
@@ -69,8 +69,8 @@ export const RealDataViewer: React.FC = () => {
   const loadCirculation = (minSev: number | null) => {
     setLoading(true);
     const url = minSev !== null
-      ? `http://localhost:8000/api/v1/data/circulation?limit=40&min_severity=${minSev}`
-      : `http://localhost:8000/api/v1/data/circulation?limit=40`;
+      ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/data/circulation?limit=40&min_severity=${minSev}`
+      : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/data/circulation?limit=40`;
     fetch(url)
       .then((r) => r.json())
       .then((d) => {

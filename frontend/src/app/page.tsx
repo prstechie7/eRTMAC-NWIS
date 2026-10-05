@@ -96,7 +96,7 @@ export default function Home() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/wells?include_real=true")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/wells?include_real=true`)
       .then((r) => { if (!r.ok) throw 0; return r.json(); })
       .then((d) => { if (Array.isArray(d) && d.length > 0) setWells(d); })
       .catch(() => {});
@@ -106,7 +106,7 @@ export default function Home() {
     let ws: WebSocket | null = null;
     let interval: NodeJS.Timeout | null = null;
     try {
-      ws = new WebSocket("ws://localhost:8000/ws/v1/telemetry");
+      ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"}/ws/v1/telemetry`);
       ws.onopen = () => setWsConnected(true);
       ws.onmessage = (ev) => {
         try {
@@ -157,7 +157,7 @@ export default function Home() {
   const handleExportPdf = async () => {
     setIsExporting(true);
     try {
-      const r = await fetch("http://localhost:8000/api/v1/reports/tour-advisory", {
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/reports/tour-advisory`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active_well_name: activeWellName, depth_md_m: depthMd, tvdss_m: tvdss, projected_hazard: "DIFFERENTIAL_STICKING", risk_index: riskIndex, evidence_well: "SYN-NHK-01", historical_npt_hours: 38.5 }),
       });

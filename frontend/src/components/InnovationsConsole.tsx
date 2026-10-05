@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { 
   Activity, DollarSign, Map as MapIcon, FileText, Bot, AlertTriangle, 
   RefreshCw, TrendingDown, Clock, ShieldAlert, Cpu, CheckCircle2, AlertOctagon,
-  MessageSquare
+  MessageSquare, Sparkles
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 
@@ -26,15 +26,15 @@ export const InnovationsConsole: React.FC<InnovationsConsoleProps> = ({ currentD
       try {
         setLoading(true);
         // 1. Fetch main innovations dashboard (A2, A7, etc)
-        const dashRes = await fetch(`http://localhost:8000/api/v1/innovations/dashboard?depth_md_m=${currentDepthMd}`);
+        const dashRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/innovations/dashboard?depth_md_m=${currentDepthMd}`);
         const dashData = await dashRes.json();
         
         // 2. Fetch Auto DDR (A13)
-        const ddrRes = await fetch(`http://localhost:8000/api/v1/innovations/generate-ddr?depth_end_m=${currentDepthMd}`);
+        const ddrRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/innovations/generate-ddr?depth_end_m=${currentDepthMd}`);
         const ddrData = await ddrRes.json();
 
         // 3. Fetch Hazard Heatmap (A8)
-        const heatRes = await fetch(`http://localhost:8000/api/v1/innovations/hazard-heatmap`);
+        const heatRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/innovations/hazard-heatmap`);
         const heatData = await heatRes.json();
 
         setData(dashData);
@@ -55,7 +55,7 @@ export const InnovationsConsole: React.FC<InnovationsConsoleProps> = ({ currentD
     
     setCopilotLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/v1/innovations/copilot", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/innovations/copilot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: copilotQuery, depth_md_m: currentDepthMd })

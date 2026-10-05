@@ -95,27 +95,27 @@ export const EngineeringConsole: React.FC<{ activeDepthMd?: number }> = ({ activ
 
   // Load live engineering data
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/engineering/kick-detection?flow_in_gpm=600&flow_out_gpm=628&pit_gain_rate_bblhr=2.1&spp_psi=2720&spp_baseline_psi=2950&gas_pct=3.1&gas_baseline_pct=1.5")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/engineering/kick-detection?flow_in_gpm=600&flow_out_gpm=628&pit_gain_rate_bblhr=2.1&spp_psi=2720&spp_baseline_psi=2950&gas_pct=3.1&gas_baseline_pct=1.5`)
       .then((r) => r.json())
       .then((d) => setKick(d))
       .catch(() => {});
 
-    fetch("http://localhost:8000/api/v1/engineering/pressure-window?depth_md_m=2410&current_ecd_sg=1.71&pore_pressure_sg=1.49&fracture_gradient_sg=1.83")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/engineering/pressure-window?depth_md_m=2410&current_ecd_sg=1.71&pore_pressure_sg=1.49&fracture_gradient_sg=1.83`)
       .then((r) => r.json())
       .then((d) => setPw(d))
       .catch(() => {});
 
-    fetch("http://localhost:8000/api/v1/engineering/hole-cleaning?rop_mhr=22&flow_rate_gpm=580&rpm=85&inclination_deg=28")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/engineering/hole-cleaning?rop_mhr=22&flow_rate_gpm=580&rpm=85&inclination_deg=28`)
       .then((r) => r.json())
       .then((d) => setHci(d))
       .catch(() => {});
 
-    fetch("http://localhost:8000/api/v1/engineering/stuck-pipe-mechanism?overbalance_psi=1120&stationary_time_min=45&torque_residual_pct=24")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/engineering/stuck-pipe-mechanism?overbalance_psi=1120&stationary_time_min=45&torque_residual_pct=24`)
       .then((r) => r.json())
       .then((d) => setSp(d))
       .catch(() => {});
 
-    fetch(`http://localhost:8000/api/v1/knowledge/what-happened-here?depth_md_m=${activeDepthMd}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/knowledge/what-happened-here?depth_md_m=${activeDepthMd}`)
       .then((r) => r.json())
       .then((d) => setHistoricalEvents(d.historical_analogs || []))
       .catch(() => {});
@@ -123,7 +123,7 @@ export const EngineeringConsole: React.FC<{ activeDepthMd?: number }> = ({ activ
 
   // Recalculate What-If scenario
   const handleWhatIfRun = () => {
-    fetch("http://localhost:8000/api/v1/engineering/what-if", {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/engineering/what-if`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -147,7 +147,7 @@ export const EngineeringConsole: React.FC<{ activeDepthMd?: number }> = ({ activ
   }, [mwInput, flowInput, rpmInput]);
 
   const sendFeedback = (verdict: string) => {
-    fetch(`http://localhost:8000/api/v1/alerts/${feedbackAlertId}/feedback`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/alerts/${feedbackAlertId}/feedback`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

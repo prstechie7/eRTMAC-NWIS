@@ -126,12 +126,12 @@ export const MLIntelligenceStation: React.FC<{ activeDepthMd?: number }> = ({
   useEffect(() => {
     // Fetch predictions and catalog
     Promise.all([
-      fetch("http://localhost:8000/api/v1/ml/predict-all", {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/ml/predict-all`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bit_depth_md: activeDepthMd, formation_name: "Upper Tipam Sandstone" })
       }).then((r) => r.json()),
-      fetch("http://localhost:8000/api/v1/ml/models").then((r) => r.json())
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/ml/models`).then((r) => r.json())
     ])
       .then(([predData, catData]) => {
         setData(predData);
@@ -152,7 +152,7 @@ export const MLIntelligenceStation: React.FC<{ activeDepthMd?: number }> = ({
     setStationAnswer(null);
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/ml/intelligence-station/query", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/ml/intelligence-station/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
